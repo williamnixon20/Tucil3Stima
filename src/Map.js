@@ -16,18 +16,22 @@ import {
     GoogleMap,
     Marker,
     Polyline,
-    Autocomplete,
 } from "@react-google-maps/api";
 import { useRef, useState } from "react";
 
-const center = { lat: -25.363, lng: 131.044 };
-function App() {
+const center = { lat: -6.957223012102734, lng: 107.64566620831309 };
+function Map() {
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
         libraries: ["places"],
     });
     // Nodes lat lng
-    const [nodes, setNodes] = useState(/**type array of lat lng */ [center]);
+
+    const [nodes, setNodes] = useState(
+        /**type array of lat lng, with labels too */ []
+    );
+    const [markers, setMarkers] = useState([]);
+    const [mode, setMode] = useState(true);
     const [paths, setPaths] = useState(/**pair of nodes */ []);
     const [map, setMap] = useState(/** @type google.maps.Map */ (null));
     const [distance, setDistance] = useState("");
@@ -55,23 +59,37 @@ function App() {
     }
 
     function clearRoute() {
-        setDistance("");
-        setDuration("");
-        originRef.current.value = "";
-        destiantionRef.current.value = "";
+        window.location.reload();
     }
 
-    function handleClick(event) {
-        let oldMarker = nodes[nodes.length - 1];
+    function handleMapClick(event) {
         let newMarker = { lat: event.latLng.lat(), lng: event.latLng.lng() };
-        setPaths([
-            ...paths,
-            [
-                { lat: oldMarker.lat, lng: oldMarker.lng },
-                { lat: newMarker.lat, lng: newMarker.lng },
-            ],
-        ]);
         setNodes([...nodes, newMarker]);
+    }
+
+    function handleMarkerClick(event) {
+        setMarkers([
+            ...markers,
+            { lat: event.latLng.lat(), lng: event.latLng.lng() },
+        ]);
+        // Mestinya markers.length == 2, tapi setMarkers asinkronus.
+        // Ini hacky way biar bisa dapet marker terbaru
+        if (markers.length === 1) {
+            let oldMarker = markers[0];
+            let newMarker = {
+                lat: event.latLng.lat(),
+                lng: event.latLng.lng(),
+            };
+            setPaths([
+                ...paths,
+                [
+                    { lat: oldMarker.lat, lng: oldMarker.lng },
+                    { lat: newMarker.lat, lng: newMarker.lng },
+                ],
+            ]);
+
+            setMarkers([]);
+        }
     }
 
     return (
@@ -86,7 +104,7 @@ function App() {
                 {/* Google Map Box */}
                 <GoogleMap
                     center={center}
-                    zoom={15}
+                    zoom={16}
                     mapContainerStyle={{ width: "100%", height: "100%" }}
                     options={{
                         zoomControl: false,
@@ -95,10 +113,15 @@ function App() {
                         fullscreenControl: false,
                     }}
                     onLoad={(map) => setMap(map)}
-                    onClick={(e) => handleClick(e)}
+                    onClick={(e) => handleMapClick(e)}
                 >
                     {nodes.map((node, i) => (
-                        <Marker key={i} position={node}></Marker>
+                        <Marker
+                            key={i}
+                            position={node}
+                            onClick={(e) => handleMarkerClick(e)}
+                            label="a"
+                        ></Marker>
                     ))}
                     {paths.map((path) => {
                         console.log(path);
@@ -126,25 +149,29 @@ function App() {
             >
                 <HStack spacing={2} justifyContent="space-between">
                     <Box flexGrow={1}>
-                        <Autocomplete>
-                            <Input
-                                type="text"
-                                placeholder="Origin"
-                                ref={originRef}
-                            />
-                        </Autocomplete>
+                        <Input
+                            type="text"
+                            placeholder="Origin"
+                            ref={originRef}
+                        />
                     </Box>
                     <Box flexGrow={1}>
-                        <Autocomplete>
-                            <Input
-                                type="text"
-                                placeholder="Destination"
-                                ref={destiantionRef}
-                            />
-                        </Autocomplete>
+                        <Input
+                            type="text"
+                            placeholder="Destination"
+                            ref={destiantionRef}
+                        />
                     </Box>
 
                     <ButtonGroup>
+                        <Button
+                            colorScheme="pink"
+                            type="submit"
+                            onClick={(e) => setMode(!mode)}
+                        >
+                            {mode && <>A*</>}
+                            {!mode && <>UCS</>}
+                        </Button>
                         <Button
                             colorScheme="pink"
                             type="submit"
@@ -159,10 +186,10 @@ function App() {
                         />
                     </ButtonGroup>
                 </HStack>
-                <HStack spacing={4} mt={4} justifyContent="space-between">
+                <HStack spacing={4} mt={4} justifyContent="space-around">
                     <Text>Distance: {distance} </Text>
-                    <Text>Duration: {duration} </Text>
-                    <IconButton
+                    <Text>Route: {duration} </Text>
+                    {/* <IconButton
                         aria-label="center back"
                         icon={<FaLocationArrow />}
                         isRound
@@ -170,11 +197,14 @@ function App() {
                             map.panTo(center);
                             map.setZoom(15);
                         }}
-                    />
+                    /> */}
+                    {/* <Link as={ReachLink} to="/" colorScheme="pink">
+                        Kembali?
+                    </Link> */}
                 </HStack>
             </Box>
         </Flex>
     );
 }
 
-export default App;
+export default Map;
