@@ -1,6 +1,6 @@
 class Node {
     // Class untuk Node
-    constructor(lat = 0, lng = 0) {
+    constructor(lat, lng) {
         this.lat = lat;
         this.lng = lng;
         this.edges = [];
@@ -29,7 +29,7 @@ class Graph {
     }
 
     // Menambah Node dalam Graf
-    addNode(name, lat, lng) {
+    addNode(name, lat = 0, lng = 0) {
         this.nodes[name] = new Node(lat, lng);
     }
 
@@ -183,4 +183,4 @@ function toRadian(degree) {
     return degree * Math.PI / 180;
 }
 
-export default Graph;
+module.exports = Graph;
