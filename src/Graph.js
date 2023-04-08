@@ -4,7 +4,7 @@ class Node {
         this.lat = lat;
         this.lng = lng;
         this.edges = [];
-    }    
+    }
 
     // Menambahkan Edge untuk Node ini
     addEdge(dest, distance) {
@@ -25,7 +25,7 @@ class Edge {
 class Graph {
     // Class Graf
     constructor() {
-        this.nodes = new Map();
+        this.nodes = {};
     }
 
     // Menambah Node dalam Graf
@@ -50,49 +50,65 @@ class Graph {
         }
     }
 
-
     // Melakukan search
     // Bisa mode aStar dan UCS
     search(src, dest, mode) {
         var pq = new PriorityQueue();
         var ret = [[], -1];
         var visited = new Map();
-    
+
         var initialData;
         if (mode === "aStar") {
-            initialData = new AStarData(src, [], 0, calculateDistance(this.nodes[src], this.nodes[dest]));
+            initialData = new AStarData(
+                src,
+                [],
+                0,
+                calculateDistance(this.nodes[src], this.nodes[dest])
+            );
         } else if (mode === "UCS") {
             initialData = new UCSData(src, [], 0);
         }
-    
+
         pq.enqueue(initialData);
         while (!pq.isEmpty()) {
             var current = pq.dequeue();
-    
+
             if (visited[current.name]) {
                 continue;
             }
             visited[current.name] = true;
-    
+
             if (current.name === dest) {
                 ret = [current.prev.concat([current.name]), current.totalDist];
                 break;
             }
-    
+
             for (var i = 0; i < this.nodes[current.name].edges.length; i++) {
                 var edge = this.nodes[current.name].edges[i];
                 if (!visited[edge.dest]) {
                     var newData;
                     if (mode === "aStar") {
-                        newData = new AStarData(edge.dest, current.prev.concat([current.name]), current.totalDist + edge.distance, calculateDistance(this.nodes[edge.dest], this.nodes[dest]));
+                        newData = new AStarData(
+                            edge.dest,
+                            current.prev.concat([current.name]),
+                            current.totalDist + edge.distance,
+                            calculateDistance(
+                                this.nodes[edge.dest],
+                                this.nodes[dest]
+                            )
+                        );
                     } else if (mode === "UCS") {
-                        newData = new UCSData(edge.dest, current.prev.concat([current.name]), current.totalDist + edge.distance);
+                        newData = new UCSData(
+                            edge.dest,
+                            current.prev.concat([current.name]),
+                            current.totalDist + edge.distance
+                        );
                     }
                     pq.enqueue(newData);
                 }
             }
         }
-    
+
         return ret;
     }
 }
@@ -124,7 +140,7 @@ class PriorityQueue {
                 left = mid + 1;
             }
         }
-        
+
         if (idx === -1) {
             this.queue.push(data);
         } else {
@@ -165,7 +181,7 @@ class AStarData {
 function calculateDistance(node1, node2) {
     // Mengembalikan jarak dalam Km
     // Source: https://community.powerbi.com/t5/Desktop/How-to-calculate-lat-long-distance/td-p/1488227
-      
+
     // Radius Bumi dalam Km
     const earthRadius = 6371;
 
@@ -175,12 +191,18 @@ function calculateDistance(node1, node2) {
     var lat2 = toRadian(node2.lat);
     var long2 = toRadian(node2.lng);
 
-    return earthRadius * Math.acos(Math.sin(lat1) * Math.sin(lat2) + Math.cos(lat1) * Math.cos(lat2) * Math.cos(long2 - long1));
+    return (
+        earthRadius *
+        Math.acos(
+            Math.sin(lat1) * Math.sin(lat2) +
+                Math.cos(lat1) * Math.cos(lat2) * Math.cos(long2 - long1)
+        )
+    );
 }
 
 function toRadian(degree) {
     // Fungsi mengubah derajat menjadi radian
-    return degree * Math.PI / 180;
+    return (degree * Math.PI) / 180;
 }
 
 module.exports = Graph;

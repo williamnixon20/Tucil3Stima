@@ -1,56 +1,100 @@
-function readFile(path) {
-    const fs = require('fs')
-    
-    return new Promise((resolve, reject) => {
-        fs.readFile(path, (err, text) => {
-            if (err) reject(err);
-            resolve(text.toString());
-        });
-    });
-}
+// function readFile(path) {
+//     const fs = require("fs");
 
-async function loadGraphFile(path) {
+//     return new Promise((resolve, reject) => {
+//         fs.readFile(path, (err, text) => {
+//             if (err) reject(err);
+//             resolve(text.toString());
+//         });
+//     });
+// }
+export const loadGraphText = async (lines) => {
     try {
-        const Graph = require('./Graph');
-        const raw = await readFile(path);
-        const lines = raw.split('\n');
+        console.log("hi");
+        const Graph = require("./Graph");
+        console.log(lines);
         var g = new Graph();
         var m = new Map();
 
         for (let i = 0; i < lines.length; i++) {
-            lines[i] = lines[i].replace(/\s+/g, ' ').trim();
+            lines[i] = lines[i].replace(/\s+/g, " ").trim();
         }
+        console.log("hi2");
 
-        var n = parseInt(lines[0]);
-        
+        var n = parseInt(lines[0].split(" ")[1]);
+        console.log(n);
+        if (!n) {
+            throw Error("No nodes");
+        }
         for (let i = 1; i < n + 1; i++) {
+            console.log(lines[i]);
             g.addNode(lines[i]);
             m[i - 1] = lines[i];
         }
 
         for (let i = n + 1; i < lines.length; i++) {
-            const line = lines[i].split(' ');
+            const line = lines[i].split(" ");
             for (let j = 0; j < line.length; j++) {
-                if (line[j] !== '0') {
-                    g.addWeightedEdge(m[i - n - 1], m[j], parseInt(line[j]), true);
+                if (line[j] !== "0") {
+                    g.addWeightedEdge(
+                        m[i - n - 1],
+                        m[j],
+                        parseInt(line[j]),
+                        true
+                    );
                 }
             }
         }
-
         return g;
     } catch (err) {
-        console.error(err);
-        return null;
+        throw err;
     }
-}
+};
+// export const loadGraphFile = async (path) => {
+//     try {
+//         const Graph = require("./Graph");
+//         const raw = await readFile(path);
+//         const lines = raw.split("\n");
+//         var g = new Graph();
+//         var m = new Map();
 
-async function main() {
-    try {
-        const g = await loadGraphFile('inputGraph.txt');
-        console.log(g.nodes["A"]);
-    } catch (err) {
-        console.error(err);
-    }
-}
+//         for (let i = 0; i < lines.length; i++) {
+//             lines[i] = lines[i].replace(/\s+/g, " ").trim();
+//         }
 
-main();
+//         var n = parseInt(lines[0]);
+
+//         for (let i = 1; i < n + 1; i++) {
+//             g.addNode(lines[i]);
+//             m[i - 1] = lines[i];
+//         }
+
+//         for (let i = n + 1; i < lines.length; i++) {
+//             const line = lines[i].split(" ");
+//             for (let j = 0; j < line.length; j++) {
+//                 if (line[j] !== "0") {
+//                     g.addWeightedEdge(
+//                         m[i - n - 1],
+//                         m[j],
+//                         parseInt(line[j]),
+//                         true
+//                     );
+//                 }
+//             }
+//         }
+
+//         return g;
+//     } catch (err) {
+//         console.error(err);
+//         return null;
+//     }
+// };
+
+// // async function main() {
+// //     try {
+// //         const g = await loadGraphFile('inputGraph.txt');
+// //         console.log(g.nodes["A"]);
+// //     } catch (err) {
+// //         console.error(err);
+// //     }
+// // }
