@@ -21,7 +21,7 @@ npm start
 ## Normal
 1. To make a normal test config, start with R (regular), followed by number of nodes (N).
 2. Specify N names for nodes. THIS CANNOT BE DUPLICATE!!!!!!!!!!!
-3. Specify the weight matrix for the graph. 
+3. Specify the weight matrix for the graph. It can be undirected/directed.
 R 16
 A
 B
@@ -60,6 +60,7 @@ P
 1. Start with "B N", where N is number of nodes. (B is for bonus)
 2. Specify N number of nodes with the format (LAT, LONG, NAME OF NODE). NAME OF NODE CANNOT BE DUPLICATE!!!
 3. Specify the adjacency matrix for the graph. We don't actually need the weight as there's a formula for counting weight (distance) from latitude and longitude. // Source: https://community.powerbi.com/t5/Desktop/How-to-calculate-lat-long-distance/td-p/1488227
+4. It can be undirected/directed.
 
 B 8
 -6.920798126505993 107.60440580899946 A
@@ -92,7 +93,7 @@ B 8
 3. Toggle the search you want (A* or UCS)
 4. Search.
 
-You can also draw on map. Clicking on the map will place a marker. Click between 2 markers to draw a route. Happy charting!
+You can also draw on map. Clicking on the map will place a marker. Click between 2 markers to draw a route. This will create a DIRECTED edge between the two nodes. To create an undirected edge, simply create a DIRECTED edge back. Happy charting!
 
 ## Author
 William Nixon

@@ -18,7 +18,6 @@ import {
     Polyline,
 } from "@react-google-maps/api";
 import { useRef, useState } from "react";
-import { loadGraphText } from "./ReadFile";
 import { Link as ReachLink } from "react-router-dom";
 
 let center = { lat: -6.957223012102734, lng: 107.64566620831309 };
@@ -55,7 +54,7 @@ function Map() {
         let graphP = graph;
         let g = new Graph();
         nodes.forEach((node) => g.addNode(node.label, node.lat, node.lng));
-        paths.forEach((path) => g.addEdge(path[0].label, path[1].label));
+        paths.forEach((path) => g.addEdge(path[0].label, path[1].label, true));
         setGraph(g);
         graphP = g;
         let origin = originRef.current.value;
@@ -64,7 +63,12 @@ function Map() {
             (node) => node.label === origin || node.label === dest
         );
         if (nodes_filtered.length !== 2) {
-            alert("Origin dan destination tidak ditemukan! Cek kembali");
+            if (origin !== dest) {
+                alert("Origin dan destination invalid! Cek kembali");
+                return;
+            } else {
+                alert("Poin origin dan destionation sama!");
+            }
         }
         if (graphP === null) {
             alert("Graph belum terload! Sudah load file/membuat map?");
@@ -84,6 +88,11 @@ function Map() {
             modeStr
         );
         setDistance(res[1]);
+        if (res[1] === -1) {
+            setRoute("Not found");
+            setFinalPaths([]);
+            return;
+        }
         let path_res = res[0];
         setRoute(path_res.toString());
 
@@ -125,7 +134,6 @@ function Map() {
                     });
                 }
                 setNodes(nodes);
-                console.log(nodes);
                 let paths = [];
                 for (let i = 1 + length; i < 1 + 2 * length; i++) {
                     let curr_node = nodes[i - (1 + length)];
@@ -138,7 +146,6 @@ function Map() {
                     }
                 }
                 setPaths(paths);
-                console.log(paths);
                 setFinalPaths([]);
                 setDistance(0);
                 setRoute("");
