@@ -11,6 +11,7 @@ import {
 import { Link as ReachLink } from "react-router-dom";
 import { useRef, useState } from "react";
 import { loadGraphText } from "./ReadFile";
+import Graph from "react-graph-vis";
 
 function Home() {
     const [mode, setMode] = useState(true);
@@ -18,12 +19,42 @@ function Home() {
     const [nodes, setNodes] = useState("N/A");
     const [route, setRoute] = useState("");
     const [graph, setGraph] = useState(null);
+    const [graphVis, setGraphVis] = useState({ nodes: [], edges: [] });
 
     /** @type React.MutableRefObject<HTMLInputElement> */
     const originRef = useRef();
     /** @type React.MutableRefObject<HTMLInputElement> */
     const destiantionRef = useRef();
-
+    async function drawGraph(graph, final_path) {
+        let nodesNew = Object.keys(graph.nodes);
+        let nodes = [];
+        let edges = [];
+        for (let i = 0; i < nodesNew.length; i++) {
+            nodes.push({
+                id: nodesNew[i],
+                label: nodesNew[i],
+                title: nodesNew[i],
+            });
+            let routes = graph.nodes[nodesNew[i]].edges;
+            for (let j = 0; j < routes.length; j++) {
+                let edgeNew = {
+                    from: nodesNew[i],
+                    to: routes[j].dest,
+                    label: String(routes[j].distance),
+                    title: String(routes[j].distance),
+                };
+                if (final_path[edgeNew.from + edgeNew.to] === undefined) {
+                    edges.push(edgeNew);
+                } else {
+                    edgeNew.color = "#FF0000";
+                    edgeNew.width = 3;
+                    edges.push(edgeNew);
+                }
+            }
+        }
+        let newGraph = { nodes, edges };
+        setGraphVis(newGraph);
+    }
     async function calculateRoute() {
         let origin = originRef.current.value;
         let dest = destiantionRef.current.value;
@@ -55,7 +86,14 @@ function Home() {
         );
         setDistance(res[1]);
         let path_res = res[0];
+        let final_path = {};
         setRoute(path_res.toString());
+        for (let i = 1; i < path_res.length; i++) {
+            let prevNode = path_res[i - 1];
+            let currNode = path_res[i];
+            final_path[prevNode + currNode] = true;
+        }
+        await drawGraph(graphP, final_path);
     }
 
     async function readFile(event) {
@@ -67,9 +105,8 @@ function Home() {
                 try {
                     let g = await loadGraphText(text_list);
                     setGraph(g);
-                    console.log(g.nodes);
-                    console.log(Object.keys(g.nodes).toString());
                     setNodes(Object.keys(g.nodes));
+                    await drawGraph(g, {});
                 } catch (err) {
                     console.log(err);
                     alert(
@@ -84,6 +121,18 @@ function Home() {
         }
     }
 
+    const options = {
+        edges: {
+            color: "#000000",
+        },
+        height: "500px",
+    };
+
+    const events = {
+        select: function (event) {
+            var { nodes, edges } = event;
+        },
+    };
     return (
         <Flex
             h="full"
@@ -159,6 +208,16 @@ function Home() {
                         Mode Bonus? Klik saya
                     </Link>
                 </HStack>
+            </Box>
+            <Box>
+                <Graph
+                    graph={graphVis}
+                    options={options}
+                    events={events}
+                    getNetwork={(network) => {
+                        //  if you want access to vis.js network api you can set the state in a parent component using this property
+                    }}
+                />
             </Box>
         </Flex>
     );
