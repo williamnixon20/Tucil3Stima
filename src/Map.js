@@ -10,7 +10,7 @@ import {
     Text,
     Link,
 } from "@chakra-ui/react";
-import { FaLocationArrow, FaTimes } from "react-icons/fa";
+import { FaLocationArrow, FaTimes, FaDownload } from "react-icons/fa";
 import {
     useJsApiLoader,
     GoogleMap,
@@ -122,9 +122,9 @@ function Map() {
                     alert("Ini bukan file google maps! Harap kembali ke home.");
                     return;
                 }
-                let length = parseInt(text_list[0].split(" ")[1]);
+                let length = parseFloat(text_list[0].split(" ")[1]);
                 let nodes = [];
-                console.log(text_list);
+                // console.log(text_list);
                 for (let i = 1; i < length + 1; i++) {
                     let curr_text = String(text_list[i]).split(" ");
                     nodes.push({
@@ -138,7 +138,7 @@ function Map() {
                 for (let i = 1 + length; i < 1 + 2 * length; i++) {
                     let curr_node = nodes[i - (1 + length)];
                     let curr_text = String(text_list[i]).split(" ");
-                    console.log(curr_text);
+                    // console.log(curr_text);
                     for (let j = 0; j < length; j++) {
                         if (curr_text[j] !== "0") {
                             paths.push([curr_node, nodes[j]]);
@@ -149,10 +149,17 @@ function Map() {
                 setFinalPaths([]);
                 setDistance(0);
                 setRoute("");
-                alert("File loaded! Tekan tombol pesawat untuk melihat marker");
+                if (nodes[0]) {
+                    center = nodes[0];
+                }
+                map.panTo(center);
+                map.setZoom(15);
+                alert(
+                    "File loaded! Klik peta untuk menaruh marker, klik antara 2 marker untuk membuat directed edge."
+                );
             };
         } catch (err) {
-            alert("Invalid file!");
+            alert("Invalid file!" + err);
         }
     }
 
@@ -181,8 +188,7 @@ function Map() {
                 lng: event.latLng.lng(),
             },
         ]);
-        // Mestinya markers.length == 2, tapi setMarkers asinkronus.
-        // Ini hacky way biar bisa dapet marker terbaru
+
         if (markers.length === 1) {
             let newMarker = {
                 label: `${node[0].label}`,
@@ -207,6 +213,47 @@ function Map() {
 
             setMarkers([]);
         }
+    }
+
+    async function handleSaveFile() {
+        let FileSaver = require("file-saver");
+        let stringBuffer = [];
+        stringBuffer.push(`B ${nodes.length}\n`);
+        // console.log(nodes.length);
+        let matrix = [];
+        let converter = {};
+        for (let i = 0; i < nodes.length; i++) {
+            // console.log(
+            //     nodes[i].lat + " " + nodes[i].lng + " " + nodes[i].label
+            // );
+            stringBuffer.push(
+                `${nodes[i].lat + " " + nodes[i].lng + " " + nodes[i].label}\n`
+            );
+            converter[nodes[i].label] = i;
+            matrix.push(new Array(nodes.length).fill(0));
+        }
+        for (let i = 0; i < paths.length; i++) {
+            let currPath = paths[i];
+            let sourceNode = converter[currPath[0].label];
+            let destNode = converter[currPath[1].label];
+            matrix[sourceNode][destNode] = 1;
+        }
+        for (let i = 0; i < nodes.length; i++) {
+            let buffer = "";
+            for (let j = 0; j < nodes.length; j++) {
+                // console.log(matrix[converter[i]][converter[j]]);
+                buffer += matrix[i][j] + " ";
+            }
+            buffer += "\n";
+            stringBuffer.push(buffer);
+            // console.log(buffer);
+        }
+        // console.log(matrix);
+        // stringBuffer.push()
+        var blob = new Blob(stringBuffer, {
+            type: "text/plain;charset=utf-8",
+        });
+        FileSaver.saveAs(blob, "savedConfig.txt");
     }
 
     return (
@@ -254,7 +301,7 @@ function Map() {
                         );
                     })}
                     {finalPath.map((path, i) => {
-                        console.log(path);
+                        // console.log(path);
                         return (
                             <Polyline
                                 path={path}
@@ -315,6 +362,11 @@ function Map() {
                             icon={<FaTimes />}
                             onClick={clearRoute}
                         />
+                        <IconButton
+                            aria-label="center back"
+                            icon={<FaDownload />}
+                            onClick={handleSaveFile}
+                        />
                     </ButtonGroup>
                 </HStack>
                 <HStack spacing={4} mt={4} justifyContent="space-around">
@@ -331,19 +383,12 @@ function Map() {
                         Distance: {Math.round(distance * 10000) / 10000} km{" "}
                     </Text>
                     <Text>Route: {route} </Text>
-                    <IconButton
-                        aria-label="center back"
-                        icon={<FaLocationArrow />}
-                        isRound
-                        onClick={() => {
-                            if (nodes[0]) {
-                                center = nodes[0];
-                            }
-                            map.panTo(center);
-                            map.setZoom(15);
-                        }}
-                    />
-                    <Link as={ReachLink} to="/" colorScheme="pink">
+                    <Link
+                        color="teal.500"
+                        as={ReachLink}
+                        to="/"
+                        colorScheme="pink"
+                    >
                         Kembali?
                     </Link>
                 </HStack>

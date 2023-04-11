@@ -110,7 +110,8 @@ function Home() {
                 } catch (err) {
                     console.log(err);
                     alert(
-                        "Invalid file for regular! Make sure it starts with R"
+                        "Invalid file for regular! Make sure it starts with R" +
+                            err
                     );
                 }
             };

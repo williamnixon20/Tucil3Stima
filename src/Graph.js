@@ -30,6 +30,9 @@ class Graph {
 
     // Menambah Node dalam Graf
     addNode(name, lat = 0, lng = 0) {
+        if (this.nodes[name] !== undefined) {
+            throw Error("Duplicate name");
+        }
         this.nodes[name] = new Node(lat, lng);
     }
 

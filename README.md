@@ -59,7 +59,7 @@ P
 ## Google maps
 1. Start with "B N", where N is number of nodes. (B is for bonus)
 2. Specify N number of nodes with the format (LAT, LONG, NAME OF NODE). NAME OF NODE CANNOT BE DUPLICATE!!!
-3. Specify the adjacency matrix for the graph. We don't actually need the weight as there's a formula for counting weight (distance) from latitude and longitude. // Source: https://community.powerbi.com/t5/Desktop/How-to-calculate-lat-long-distance/td-p/1488227
+3. Specify the adjacency matrix for the graph. We don't actually need the weight as there's a formula for counting weight (distance) from latitude and longitude. You can specify weight, but it will not be used. // Source: https://community.powerbi.com/t5/Desktop/How-to-calculate-lat-long-distance/td-p/1488227
 4. It can be undirected/directed.
 
 B 8
@@ -95,6 +95,7 @@ B 8
 
 You can also draw on map. Clicking on the map will place a marker. Click between 2 markers to draw a route. This will create a DIRECTED edge between the two nodes. To create an undirected edge, simply create a DIRECTED edge back. Happy charting!
 
+Another note, you can download your created map into text config that you can laod later :D.
 ## Author
 William Nixon
 Farhan Nabil Suryono
