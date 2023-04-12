@@ -208,4 +208,4 @@ function toRadian(degree) {
     return (degree * Math.PI) / 180;
 }
 
-module.exports = Graph;
+module.exports = { Graph, calculateDistance };

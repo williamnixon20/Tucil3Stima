@@ -21,6 +21,7 @@ import { useRef, useState } from "react";
 import { Link as ReachLink } from "react-router-dom";
 
 let center = { lat: -6.957223012102734, lng: 107.64566620831309 };
+
 function Map() {
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
@@ -50,7 +51,7 @@ function Map() {
     }
 
     async function calculateRoute() {
-        const Graph = require("./Graph");
+        const { Graph } = require("./Graph");
         let graphP = graph;
         let g = new Graph();
         nodes.forEach((node) => g.addNode(node.label, node.lat, node.lng));
@@ -118,11 +119,7 @@ function Map() {
             reader.readAsText(event.target.files[0]);
             reader.onload = async (e) => {
                 const text_list = e.target.result.split(/\r?\n/);
-                if (text_list[0].split(" ")[0] !== "B") {
-                    alert("Ini bukan file google maps! Harap kembali ke home.");
-                    return;
-                }
-                let length = parseFloat(text_list[0].split(" ")[1]);
+                let length = parseFloat(text_list[0]);
                 let nodes = [];
                 // console.log(text_list);
                 for (let i = 1; i < length + 1; i++) {
@@ -216,9 +213,10 @@ function Map() {
     }
 
     async function handleSaveFile() {
+        const { calculateDistance } = require("./Graph");
         let FileSaver = require("file-saver");
         let stringBuffer = [];
-        stringBuffer.push(`B ${nodes.length}\n`);
+        stringBuffer.push(`${nodes.length}\n`);
         // console.log(nodes.length);
         let matrix = [];
         let converter = {};
@@ -236,7 +234,10 @@ function Map() {
             let currPath = paths[i];
             let sourceNode = converter[currPath[0].label];
             let destNode = converter[currPath[1].label];
-            matrix[sourceNode][destNode] = 1;
+            matrix[sourceNode][destNode] = calculateDistance(
+                currPath[0],
+                currPath[1]
+            );
         }
         for (let i = 0; i < nodes.length; i++) {
             let buffer = "";

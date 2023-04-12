@@ -40,8 +40,12 @@ function Home() {
                 let edgeNew = {
                     from: nodesNew[i],
                     to: routes[j].dest,
-                    label: String(routes[j].distance),
-                    title: String(routes[j].distance),
+                    label: String(
+                        Math.round(routes[j].distance * 10000) / 10000
+                    ),
+                    title: String(
+                        Math.round(routes[j].distance * 10000) / 10000
+                    ),
                 };
                 if (final_path[edgeNew.from + edgeNew.to] === undefined) {
                     edges.push(edgeNew);
@@ -195,7 +199,9 @@ function Home() {
                         width="20rem"
                         onChange={readFile}
                     />
-                    <Text>Distance: {distance} </Text>
+                    <Text>
+                        Distance: {Math.round(distance * 10000) / 10000} km{" "}
+                    </Text>
                     <Text>Route: {route} </Text>
                 </HStack>
                 <HStack spacing={4} mt={4} justifyContent="space-around">
